@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meu ônibus está chegando</title>
-  <meta name="description" content="Previsão de chegada dos ônibus de São Paulo, com aviso quando o seu ônibus estiver perto.">
+  <meta name="description" content="Veja quais ônibus passam perto de você em São Paulo, acompanhe em tempo real e receba um aviso quando o seu estiver chegando.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='3' width='24' height='22' rx='5' fill='%230a5bd8'/%3E%3Crect x='8' y='7' width='16' height='8' rx='2' fill='white'/%3E%3Ccircle cx='10' cy='27' r='3' fill='%231b2430'/%3E%3Ccircle cx='22' cy='27' r='3' fill='%231b2430'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -12,66 +13,117 @@
   <header class="topo">
     <div>
       <h1>Meu ônibus está chegando</h1>
-      <p>Previsão em tempo real dos ônibus de São Paulo</p>
+      <p>Ônibus de São Paulo em tempo real</p>
     </div>
-    <button id="btn-contraste" class="botao-secundario" type="button" aria-pressed="false">Alto contraste</button>
+    <button id="btn-contraste" class="botao-contorno" type="button" aria-pressed="false">Alto contraste</button>
   </header>
 
   <main>
-    <section class="cartao" aria-labelledby="titulo-linha">
-      <h2 id="titulo-linha">1. Escolha a linha</h2>
-      <form id="form-linha" class="linha-form">
-        <label for="busca-linha">Número ou nome da linha</label>
+    <!-- Busca -->
+    <section id="busca" class="cartao" aria-labelledby="titulo-busca">
+      <h2 id="titulo-busca">Qual ônibus você procura?</h2>
+
+      <div class="abas" role="tablist" aria-label="Forma de busca">
+        <button type="button" role="tab" data-modo="perto" aria-controls="modo-perto">Perto de mim</button>
+        <button type="button" role="tab" data-modo="endereco" aria-controls="form-endereco">Endereço</button>
+        <button type="button" role="tab" data-modo="linha" aria-controls="form-linha">Linha</button>
+      </div>
+
+      <div id="modo-perto" role="tabpanel">
+        <p class="dica">Mostra as linhas com ônibus passando perto de você agora.</p>
+        <button id="btn-perto" type="button" class="botao-largo">Usar minha localização</button>
+      </div>
+
+      <form id="form-endereco" role="tabpanel" hidden>
+        <label for="campo-endereco">Endereço ou lugar em São Paulo</label>
         <div class="campo-acao">
-          <input id="busca-linha" type="text" placeholder="Ex.: 8000 ou Lapa" autocomplete="off" required>
+          <input id="campo-endereco" type="text" placeholder="Ex.: Av. Paulista, 1578" autocomplete="street-address">
           <button type="submit">Buscar</button>
         </div>
+        <p class="dica">Mostra as linhas com ônibus passando perto desse lugar agora.</p>
       </form>
-      <p id="msg-linha" class="mensagem" role="status"></p>
-      <ul id="lista-linhas" class="lista"></ul>
+
+      <form id="form-linha" role="tabpanel" hidden>
+        <label for="campo-linha">Número da linha ou destino</label>
+        <div class="campo-acao">
+          <input id="campo-linha" type="text" placeholder="Ex.: 875A, Lapa, Aeroporto" autocomplete="off">
+          <button type="submit">Buscar</button>
+        </div>
+        <p class="dica">A SPTrans não calcula rotas de um endereço a outro. Busque pelo número da linha ou pelo nome do terminal de destino.</p>
+      </form>
+
+      <p id="msg-busca" class="mensagem" role="status"></p>
+      <ul id="resultados" class="lista"></ul>
+      <button id="btn-mais" type="button" class="botao-contorno botao-largo" hidden>Mostrar mais</button>
     </section>
 
-    <section id="passo-ponto" class="cartao" aria-labelledby="titulo-ponto" hidden>
-      <h2 id="titulo-ponto">2. Escolha o ponto</h2>
-      <p id="linha-escolhida" class="destaque"></p>
-      <button id="btn-proximo" type="button">Achar o ponto mais próximo de mim</button>
-      <label for="filtro-ponto">Ou filtre pelo nome ou endereço</label>
-      <input id="filtro-ponto" type="text" placeholder="Ex.: Paulista" autocomplete="off">
-      <p id="msg-ponto" class="mensagem" role="status"></p>
-      <ul id="lista-pontos" class="lista"></ul>
-    </section>
-
-    <section id="painel" class="cartao" aria-labelledby="titulo-painel" hidden>
-      <h2 id="titulo-painel">3. Próximos ônibus</h2>
-      <p id="ponto-escolhido" class="destaque"></p>
+    <!-- Painel da linha -->
+    <section id="painel" class="cartao" aria-labelledby="painel-titulo" hidden>
+      <div class="painel-topo">
+        <div>
+          <h2 id="painel-titulo"></h2>
+          <p id="painel-sentido" class="sentido-texto"></p>
+        </div>
+        <button id="btn-voltar" type="button" class="botao-contorno">Trocar linha</button>
+      </div>
 
       <div id="aviso" class="aviso" role="alert" hidden></div>
 
-      <ul id="lista-previsoes" class="lista" aria-live="polite"></ul>
-      <p id="atualizado" class="mensagem" role="status"></p>
-
-      <div class="configuracao">
-        <label for="min-aviso">Avisar quando faltar</label>
-        <select id="min-aviso">
-          <option value="0">Não avisar</option>
-          <option value="2">2 minutos</option>
-          <option value="5" selected>5 minutos</option>
-          <option value="10">10 minutos</option>
-        </select>
+      <div class="destaque" aria-live="polite">
+        <strong id="destaque-valor"></strong>
+        <span id="destaque-texto"></span>
       </div>
 
-      <div id="mapa" aria-label="Mapa com o ponto e os ônibus da linha" role="img"></div>
-      <p class="legenda">
-        <span class="bolinha ponto"></span> ponto
-        <span class="bolinha onibus"></span> ônibus
-        <span class="bolinha acessivel"></span> ônibus acessível
-        <span class="bolinha voce"></span> você
-      </p>
+      <button id="btn-localizacao" type="button" class="botao-largo" hidden>Usar minha localização para ver a distância</button>
+      <p id="msg-localizacao" class="mensagem" role="status"></p>
+
+      <div id="area-mapa">
+        <div id="mapa" role="img" aria-label="Mapa com a sua posição, os ônibus da linha e os pontos"></div>
+        <p class="legenda">
+          <span class="bolinha referencia"></span>você
+          <span class="bolinha onibus"></span>ônibus
+          <span class="bolinha acessivel"></span>acessível
+          <span id="legenda-ponto"><span class="bolinha ponto"></span>ponto</span>
+        </p>
+      </div>
+
+      <h3>Ônibus mais próximos</h3>
+      <ul id="lista-onibus" class="lista"></ul>
+
+      <h3>Previsão no seu ponto</h3>
+      <p id="msg-ponto" class="mensagem" role="status"></p>
+      <label for="select-ponto" class="visualmente-oculto">Seu ponto</label>
+      <select id="select-ponto" hidden></select>
+      <ul id="lista-previsoes" class="lista" aria-live="polite"></ul>
+
+      <h3>Avisos</h3>
+      <div class="avisos-config">
+        <div>
+          <label for="aviso-distancia">Avisar quando o ônibus estiver a</label>
+          <select id="aviso-distancia">
+            <option value="0">Não avisar</option>
+            <option value="300">300 m</option>
+            <option value="500" selected>500 m</option>
+            <option value="1000">1 km</option>
+          </select>
+        </div>
+        <div id="bloco-minutos" hidden>
+          <label for="aviso-minutos">Avisar quando faltar para chegar ao ponto</label>
+          <select id="aviso-minutos">
+            <option value="0">Não avisar</option>
+            <option value="2">2 minutos</option>
+            <option value="5" selected>5 minutos</option>
+            <option value="10">10 minutos</option>
+          </select>
+        </div>
+      </div>
+
+      <p id="atualizado" class="mensagem" role="status"></p>
     </section>
   </main>
 
   <footer class="rodape">
-    <p>Dados de localização e previsão: <a href="https://www.sptrans.com.br/desenvolvedores/" target="_blank" rel="noopener">SPTrans (API Olho Vivo)</a>. Mapa: © OpenStreetMap.</p>
+    <p>Dados de linhas, posições e previsões: <a href="https://www.sptrans.com.br/desenvolvedores/" target="_blank" rel="noopener">SPTrans (API Olho Vivo)</a>. Mapa e endereços: © OpenStreetMap.</p>
     <p>Projeto acadêmico FIAP, Global Solution 2026.2.</p>
   </footer>
 

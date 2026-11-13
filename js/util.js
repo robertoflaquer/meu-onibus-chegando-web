@@ -1,4 +1,5 @@
 // Funcoes puras de apoio (sem acesso a tela nem a rede).
+// Tambem sao usadas pela funcao serverless api/perto.js.
 
 const RAIO_TERRA_M = 6371000;
 const paraRadianos = (graus) => (graus * Math.PI) / 180;
@@ -29,18 +30,10 @@ export function minutosAte(horaConsulta, horaChegada) {
 }
 
 export function formatarDistancia(metros) {
-  return metros < 1000 ? `${Math.round(metros)} m` : `${(metros / 1000).toFixed(1)} km`;
-}
-
-/** Letreiro completo da linha, ex.: "8000-10". */
-export const letreiro = (linha) => `${linha.lt}-${linha.tl}`;
-
-/** Sentido da linha: sl 1 vai do terminal principal ao secundario; sl 2 volta. */
-export function nomeSentido(linha) {
-  return linha.sl === 1 ? `${linha.tp} → ${linha.ts}` : `${linha.ts} → ${linha.tp}`;
+  return metros < 1000 ? `${Math.round(metros / 10) * 10} m` : `${(metros / 1000).toFixed(1)} km`;
 }
 
 export function textoMinutos(min) {
-  if (min <= 0) return "Chegando";
+  if (min <= 0) return "chegando";
   return min === 1 ? "1 min" : `${min} min`;
 }

@@ -1,48 +1,68 @@
 // Mapa com Leaflet. Usa marcadores simples (circulos) para nao depender de imagens.
+// Se o Leaflet nao carregar (sem internet para o CDN), o app continua funcionando sem mapa.
+
+const COR = { ponto: "#c62828", onibus: "#0a5bd8", acessivel: "#0b7a3e", referencia: "#6a1b9a" };
+const CENTRO_SP = [-23.55, -46.63];
 
 let mapa = null;
 let camadaOnibus = null;
-let marcadorPonto = null;
-let marcadorUsuario = null;
+let camadaPontos = null;
+let marcadorReferencia = null;
 
-const COR = { ponto: "#c62828", onibus: "#0a5bd8", acessivel: "#0b7a3e", voce: "#6a1b9a" };
+export const mapaDisponivel = () => typeof window.L !== "undefined";
 
 function circulo(posicao, cor, raio) {
   return L.circleMarker(posicao, { radius: raio, color: "#ffffff", weight: 2, fillColor: cor, fillOpacity: 1 });
 }
 
-function garantirMapa() {
-  if (mapa) return;
-  mapa = L.map("mapa").setView([-23.55, -46.63], 13);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap",
-  }).addTo(mapa);
-  camadaOnibus = L.layerGroup().addTo(mapa);
+/** Cria o mapa na primeira vez e recalcula o tamanho (necessario quando a secao estava oculta). */
+export function prepararMapa() {
+  if (!mapaDisponivel()) return false;
+  if (!mapa) {
+    mapa = L.map("mapa").setView(CENTRO_SP, 13);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap",
+    }).addTo(mapa);
+    camadaPontos = L.layerGroup().addTo(mapa);
+    camadaOnibus = L.layerGroup().addTo(mapa);
+  }
+  mapa.invalidateSize();
+  return true;
 }
 
-/** Chamar quando a secao do mapa ficar visivel, para o Leaflet recalcular o tamanho. */
-export function mostrarMapa(ponto) {
-  garantirMapa();
-  mapa.invalidateSize();
-  if (marcadorPonto) marcadorPonto.remove();
-  marcadorPonto = circulo([ponto.py, ponto.px], COR.ponto, 10).bindTooltip(ponto.np).addTo(mapa);
-  mapa.setView([ponto.py, ponto.px], 15);
+export function mostrarReferencia(referencia) {
+  if (!mapa) return;
+  marcadorReferencia?.remove();
+  marcadorReferencia = null;
+  if (!referencia) return;
+  marcadorReferencia = circulo([referencia.lat, referencia.lon], COR.referencia, 9)
+    .bindTooltip(referencia.rotulo)
+    .addTo(mapa);
+}
+
+export function mostrarPontos(pontos, selecionado) {
+  if (!mapa) return;
+  camadaPontos.clearLayers();
+  for (const ponto of pontos) {
+    const escolhido = selecionado && ponto.cp === selecionado.cp;
+    circulo([ponto.py, ponto.px], COR.ponto, escolhido ? 10 : 5).bindTooltip(ponto.np).addTo(camadaPontos);
+  }
 }
 
 export function mostrarOnibus(veiculos) {
-  garantirMapa();
+  if (!mapa) return;
   camadaOnibus.clearLayers();
   for (const v of veiculos) {
-    const cor = v.a ? COR.acessivel : COR.onibus;
-    circulo([v.py, v.px], cor, 7)
+    circulo([v.py, v.px], v.a ? COR.acessivel : COR.onibus, 7)
       .bindTooltip(`Ônibus ${v.p}${v.a ? " (acessível)" : ""}`)
       .addTo(camadaOnibus);
   }
 }
 
-export function mostrarUsuario(posicao) {
-  garantirMapa();
-  if (marcadorUsuario) marcadorUsuario.remove();
-  marcadorUsuario = circulo([posicao.lat, posicao.lon], COR.voce, 8).bindTooltip("Você").addTo(mapa);
+/** Ajusta o zoom para caber todos os pontos informados ([lat, lon]). */
+export function enquadrar(coordenadas) {
+  if (!mapa || !coordenadas.length) return;
+  if (coordenadas.length === 1) mapa.setView(coordenadas[0], 16);
+  else mapa.fitBounds(coordenadas, { padding: [30, 30], maxZoom: 16 });
 }
