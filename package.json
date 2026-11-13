@@ -1,0 +1,11 @@
+{
+  "name": "meu-onibus-chegando-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Previsao de chegada de onibus em Sao Paulo com a API Olho Vivo (SPTrans)",
+  "scripts": {
+    "dev": "node --env-file=.env dev-server.mjs",
+    "teste-api": "node teste-api.mjs"
+  }
+}

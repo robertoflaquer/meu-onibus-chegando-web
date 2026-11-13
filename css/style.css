@@ -1,0 +1,168 @@
+:root {
+  --fundo: #f4f6f8;
+  --cartao: #ffffff;
+  --texto: #1b2430;
+  --texto-suave: #55606e;
+  --borda: #d5dbe3;
+  --primaria: #0a5bd8;
+  --primaria-texto: #ffffff;
+  --acessivel: #0b7a3e;
+  --alerta-fundo: #fff3cd;
+  --alerta-borda: #c58b00;
+}
+
+:root[data-contraste="alto"] {
+  --fundo: #000000;
+  --cartao: #000000;
+  --texto: #ffffff;
+  --texto-suave: #ffffff;
+  --borda: #ffffff;
+  --primaria: #ffd400;
+  --primaria-texto: #000000;
+  --acessivel: #00ff6a;
+  --alerta-fundo: #ffd400;
+  --alerta-borda: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+.topo {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 1rem 16px;
+  background: var(--primaria);
+  color: var(--primaria-texto);
+}
+.topo h1 { margin: 0; font-size: 1.4rem; }
+.topo p { margin: 0.2rem 0 0; opacity: 0.9; }
+
+main { max-width: 760px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+
+.cartao {
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 16px;
+}
+.cartao h2 { margin: 0 0 0.75rem; font-size: 1.15rem; }
+
+label { display: block; font-weight: 600; margin: 0.75rem 0 0.35rem; }
+
+input, select, button {
+  font: inherit;
+  min-height: 48px;
+  border-radius: 8px;
+}
+input, select {
+  width: 100%;
+  padding: 0 12px;
+  border: 2px solid var(--borda);
+  background: var(--cartao);
+  color: var(--texto);
+}
+button {
+  padding: 0 18px;
+  border: 2px solid var(--primaria);
+  background: var(--primaria);
+  color: var(--primaria-texto);
+  font-weight: 700;
+  cursor: pointer;
+}
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 3px solid var(--texto);
+  outline-offset: 2px;
+}
+.botao-secundario {
+  background: transparent;
+  color: inherit;
+  border-color: currentColor;
+}
+.campo-acao { display: flex; gap: 8px; }
+.campo-acao button { flex: none; }
+
+.lista { list-style: none; margin: 0.75rem 0 0; padding: 0; display: grid; gap: 8px; }
+.lista button {
+  width: 100%;
+  min-height: 56px;
+  text-align: left;
+  background: var(--cartao);
+  color: var(--texto);
+  border: 2px solid var(--borda);
+  font-weight: 500;
+  padding: 8px 12px;
+}
+.lista button:hover { border-color: var(--primaria); }
+.lista strong { display: block; }
+
+.mensagem { color: var(--texto-suave); margin: 0.5rem 0 0; min-height: 1.2em; }
+.destaque { font-weight: 700; margin: 0 0 0.5rem; }
+
+.previsao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 2px solid var(--borda);
+  border-radius: 8px;
+}
+.previsao .minutos { font-size: 1.8rem; font-weight: 800; white-space: nowrap; }
+.previsao .detalhe { color: var(--texto-suave); }
+.selo-acessivel {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border: 2px solid var(--acessivel);
+  border-radius: 999px;
+  color: var(--acessivel);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.aviso {
+  margin: 0.5rem 0;
+  padding: 12px;
+  border: 2px solid var(--alerta-borda);
+  background: var(--alerta-fundo);
+  color: #000;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.configuracao { margin-top: 1rem; }
+
+#mapa {
+  height: 320px;
+  margin-top: 1rem;
+  border: 2px solid var(--borda);
+  border-radius: 8px;
+}
+.legenda { color: var(--texto-suave); font-size: 0.9rem; }
+.bolinha {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  margin: 0 4px 0 12px;
+  vertical-align: middle;
+}
+.bolinha.ponto { background: #c62828; }
+.bolinha.onibus { background: #0a5bd8; }
+.bolinha.acessivel { background: #0b7a3e; }
+.bolinha.voce { background: #6a1b9a; }
+
+.rodape { max-width: 760px; margin: 0 auto; padding: 16px; color: var(--texto-suave); font-size: 0.9rem; }
+.rodape a { color: inherit; }
+
+[hidden] { display: none !important; }

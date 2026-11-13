@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meu ônibus está chegando</title>
+  <meta name="description" content="Previsão de chegada dos ônibus de São Paulo, com aviso quando o seu ônibus estiver perto.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <div>
+      <h1>Meu ônibus está chegando</h1>
+      <p>Previsão em tempo real dos ônibus de São Paulo</p>
+    </div>
+    <button id="btn-contraste" class="botao-secundario" type="button" aria-pressed="false">Alto contraste</button>
+  </header>
+
+  <main>
+    <section class="cartao" aria-labelledby="titulo-linha">
+      <h2 id="titulo-linha">1. Escolha a linha</h2>
+      <form id="form-linha" class="linha-form">
+        <label for="busca-linha">Número ou nome da linha</label>
+        <div class="campo-acao">
+          <input id="busca-linha" type="text" placeholder="Ex.: 8000 ou Lapa" autocomplete="off" required>
+          <button type="submit">Buscar</button>
+        </div>
+      </form>
+      <p id="msg-linha" class="mensagem" role="status"></p>
+      <ul id="lista-linhas" class="lista"></ul>
+    </section>
+
+    <section id="passo-ponto" class="cartao" aria-labelledby="titulo-ponto" hidden>
+      <h2 id="titulo-ponto">2. Escolha o ponto</h2>
+      <p id="linha-escolhida" class="destaque"></p>
+      <button id="btn-proximo" type="button">Achar o ponto mais próximo de mim</button>
+      <label for="filtro-ponto">Ou filtre pelo nome ou endereço</label>
+      <input id="filtro-ponto" type="text" placeholder="Ex.: Paulista" autocomplete="off">
+      <p id="msg-ponto" class="mensagem" role="status"></p>
+      <ul id="lista-pontos" class="lista"></ul>
+    </section>
+
+    <section id="painel" class="cartao" aria-labelledby="titulo-painel" hidden>
+      <h2 id="titulo-painel">3. Próximos ônibus</h2>
+      <p id="ponto-escolhido" class="destaque"></p>
+
+      <div id="aviso" class="aviso" role="alert" hidden></div>
+
+      <ul id="lista-previsoes" class="lista" aria-live="polite"></ul>
+      <p id="atualizado" class="mensagem" role="status"></p>
+
+      <div class="configuracao">
+        <label for="min-aviso">Avisar quando faltar</label>
+        <select id="min-aviso">
+          <option value="0">Não avisar</option>
+          <option value="2">2 minutos</option>
+          <option value="5" selected>5 minutos</option>
+          <option value="10">10 minutos</option>
+        </select>
+      </div>
+
+      <div id="mapa" aria-label="Mapa com o ponto e os ônibus da linha" role="img"></div>
+      <p class="legenda">
+        <span class="bolinha ponto"></span> ponto
+        <span class="bolinha onibus"></span> ônibus
+        <span class="bolinha acessivel"></span> ônibus acessível
+        <span class="bolinha voce"></span> você
+      </p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Dados de localização e previsão: <a href="https://www.sptrans.com.br/desenvolvedores/" target="_blank" rel="noopener">SPTrans (API Olho Vivo)</a>. Mapa: © OpenStreetMap.</p>
+    <p>Projeto acadêmico FIAP, Global Solution 2026.2.</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
