@@ -2,6 +2,8 @@
 
 Aplicativo web que mostra quais ônibus estão passando perto de você em São Paulo, acompanha a linha escolhida em tempo real e avisa quando o ônibus estiver chegando.
 
+**App publicado:** https://meu-onibus-chegando-web.vercel.app/
+
 Projeto da Global Solution 2026.2, disciplina Application Development (FIAP). Tema do desafio: Citizen Intelligence & Predictive Analytics, monitoramento da cidade para melhorar a qualidade de vida do cidadão.
 
 ## O que o app faz
