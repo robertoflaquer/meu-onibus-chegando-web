@@ -30,7 +30,8 @@ export function minutosAte(horaConsulta, horaChegada) {
 }
 
 export function formatarDistancia(metros) {
-  return metros < 1000 ? `${Math.round(metros / 10) * 10} m` : `${(metros / 1000).toFixed(1)} km`;
+  if (metros < 1000) return `${Math.round(metros / 10) * 10} m`;
+  return `${(metros / 1000).toFixed(1).replace(".", ",")} km`;
 }
 
 export function textoMinutos(min) {

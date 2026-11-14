@@ -6,7 +6,6 @@
 
 import * as api from "./api.js";
 import { $, criar, mensagem } from "./dom.js";
-import { textoSentido } from "./linhas.js";
 import { obterLocalizacao } from "./localizacao.js";
 import { dispararAviso, esconderAviso, pedirPermissaoNotificacao } from "./aviso.js";
 import * as mapa from "./mapa.js";
@@ -16,6 +15,7 @@ const INTERVALO_MS = 20000;
 const MAX_ONIBUS_NA_LISTA = 5;
 const MARGEM_MOVIMENTO_M = 20; // diferencas menores podem ser so imprecisao do GPS
 const RAIO_PONTO_AUTOMATICO_M = 800; // escolhe sozinho o ponto mais proximo se estiver ate aqui
+const ESCALA_TRILHA_M = 2000; // a trilha visual vai de 2 km ate "voce"
 
 const estado = {
   linha: null,
@@ -54,14 +54,17 @@ export function abrirPainel(linha, referencia) {
 
   esconderAviso();
   $("#painel-titulo").textContent = linha.letreiro;
-  $("#painel-sentido").textContent = textoSentido(linha);
+  $("#painel-destino").textContent = linha.destino;
+  $("#painel-origem").textContent = `saindo de ${linha.origem}`;
   $("#btn-localizacao").hidden = Boolean(referencia);
   mensagem("#msg-localizacao", "");
   $("#bloco-minutos").hidden = true;
   $("#lista-onibus").replaceChildren();
   $("#lista-previsoes").replaceChildren();
   mensagem("#destaque-valor", "");
-  mensagem("#destaque-texto", "Carregando os ônibus da linha...");
+  mensagem("#destaque-texto", "Procurando os ônibus desta linha...");
+  $("#destaque-status").hidden = true;
+  $("#trilha").hidden = true;
   $("#painel").hidden = false;
 
   $("#area-mapa").hidden = false;
@@ -132,7 +135,7 @@ function preencherPontos() {
   const { pontos, referencia } = estado;
   $("#legenda-ponto").hidden = !pontos.length;
   if (!pontos.length) {
-    mensagem("#msg-ponto", "A SPTrans não informa os pontos desta linha. Acompanhe pela distância dos ônibus, acima.");
+    mensagem("#msg-ponto", "A SPTrans não informa os pontos desta linha. Acompanhe pela distância do ônibus até você, no topo.");
     $("#select-ponto").hidden = true;
     return;
   }
@@ -143,7 +146,7 @@ function preencherPontos() {
   }));
   if (referencia) ordenados.sort((a, b) => a.distancia - b.distancia);
 
-  const opcoes = [new Option("Escolha o seu ponto", "")];
+  const opcoes = [new Option("Escolha o ponto onde você vai embarcar", "")];
   for (const p of ordenados) {
     const distancia = p.distancia !== null ? ` (a ${formatarDistancia(p.distancia)})` : "";
     opcoes.push(new Option(`${p.np}${distancia}`, String(p.cp)));
@@ -190,7 +193,7 @@ async function atualizar() {
     if (estado.ponto) renderizarPrevisoes(chegadas);
     if (!estado.enquadrado) enquadrarMapa(veiculos);
     checarAvisos(veiculos, chegadas);
-    mensagem("#atualizado", `Atualizado às ${posicao.hr}. Atualiza sozinho a cada 20 segundos.`);
+    mensagem("#atualizado", `Ao vivo · atualizado às ${posicao.hr}, de novo em 20 s`);
   } catch {
     mensagem("#atualizado", "Não foi possível atualizar agora. Tentando de novo em 20 segundos.");
   }
@@ -245,29 +248,57 @@ function seloAcessivel() {
   return criar("span", { classe: "selo-acessivel", texto: "Acessível" });
 }
 
-function renderizarOnibus(veiculos) {
+function chipStatus(status) {
+  return criar("span", { classe: `chip ${status}`, texto: TEXTO_STATUS[status] });
+}
+
+function renderizarDestaque(veiculos) {
+  const chip = $("#destaque-status");
+  chip.hidden = true;
+  $("#trilha").hidden = true;
+
   if (!veiculos.length) {
     mensagem("#destaque-valor", "");
     mensagem("#destaque-texto", "Nenhum ônibus desta linha circulando agora.");
-    $("#lista-onibus").replaceChildren();
     return;
   }
 
-  if (estado.referencia) {
-    const alvo = veiculos.find((v) => v.status === "aproximando") ?? veiculos[0];
-    const status = TEXTO_STATUS[alvo.status] ? `, ${TEXTO_STATUS[alvo.status]}` : "";
-    mensagem("#destaque-valor", formatarDistancia(alvo.distancia));
-    mensagem("#destaque-texto", `é a distância do ônibus mais próximo até ${quemEsta()}${status}.`);
-  } else {
+  if (!estado.referencia) {
     mensagem("#destaque-valor", String(veiculos.length));
-    mensagem("#destaque-texto", "ônibus desta linha circulando agora. Use sua localização para ver a distância.");
+    mensagem("#destaque-texto", "ônibus desta linha circulando agora. Use sua localização para saber a que distância estão.");
+    return;
+  }
+
+  // Prioriza o onibus que vem na direcao do usuario; senao, o mais proximo.
+  const alvo = veiculos.find((v) => v.status === "aproximando") ?? veiculos[0];
+  mensagem("#destaque-valor", formatarDistancia(alvo.distancia));
+  mensagem("#destaque-texto", `até ${quemEsta()}, ônibus ${alvo.p}${alvo.a ? " (acessível)" : ""}`);
+  if (TEXTO_STATUS[alvo.status]) {
+    chip.className = `chip ${alvo.status}`;
+    chip.textContent = TEXTO_STATUS[alvo.status];
+    chip.hidden = false;
+  }
+
+  // Trilha: o onibus anda da esquerda (2 km ou mais) ate "voce" (direita).
+  const fracao = Math.min(alvo.distancia, ESCALA_TRILHA_M) / ESCALA_TRILHA_M;
+  $("#trilha-onibus").style.left = `calc((100% - 14px) * ${(1 - fracao).toFixed(3)})`;
+  $("#trilha-rotulo").textContent = quemEsta();
+  $("#trilha").hidden = false;
+}
+
+function renderizarOnibus(veiculos) {
+  renderizarDestaque(veiculos);
+
+  if (!veiculos.length) {
+    $("#lista-onibus").replaceChildren(criar("li", { classe: "item-onibus", texto: "Nenhum ônibus circulando agora." }));
+    return;
   }
 
   const itens = veiculos.slice(0, MAX_ONIBUS_NA_LISTA).map((v) => {
-    const partes = [`Ônibus ${v.p}`];
-    if (v.distancia !== null) partes.push(`a ${formatarDistancia(v.distancia)}`);
-    if (TEXTO_STATUS[v.status]) partes.push(TEXTO_STATUS[v.status]);
-    const item = criar("li", { classe: "item-onibus", texto: partes.join(" · ") });
+    const item = criar("li", { classe: "item-onibus" });
+    if (v.distancia !== null) item.append(criar("span", { classe: "distancia", texto: formatarDistancia(v.distancia) }));
+    item.append(criar("span", { classe: "prefixo", texto: `ônibus ${v.p}` }));
+    if (TEXTO_STATUS[v.status]) item.append(chipStatus(v.status));
     if (v.a) item.append(seloAcessivel());
     return item;
   });

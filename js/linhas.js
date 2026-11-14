@@ -14,8 +14,6 @@ export const linhaDaBusca = (l) => comSentido(l.cl, `${l.lt}-${l.tl}`, l.sl, l.t
 
 export const linhaDaPosicao = (l) => comSentido(l.cl, l.c, l.sl, l.lt0, l.lt1);
 
-export const textoSentido = (linha) => `${linha.origem} → ${linha.destino}`;
-
 /** Junta os dois sentidos de uma mesma linha em um unico grupo, mantendo a ordem. */
 export function agruparPorLetreiro(linhas) {
   const grupos = new Map();

@@ -1,7 +1,7 @@
 // Tela de busca: tres formas de chegar a uma linha.
-//   1. Perto de mim: GPS -> linhas com onibus passando perto agora.
-//   2. Endereco: texto -> coordenadas (Nominatim) -> linhas com onibus passando perto.
-//   3. Linha: numero ou destino -> linhas agrupadas por letreiro, com os dois sentidos.
+//   1. Perto de mim (acao principal, sempre visivel): GPS -> linhas com onibus passando perto agora.
+//   2. Aba Endereco: texto -> coordenadas (Nominatim) -> linhas com onibus passando perto.
+//   3. Aba Numero ou destino: linhas agrupadas por letreiro, com os dois sentidos.
 
 import * as api from "./api.js";
 import { $, criar, itemBotao, mensagem } from "./dom.js";
@@ -25,7 +25,7 @@ export function iniciarBusca(callback) {
   $("#form-endereco").addEventListener("submit", buscarPorEndereco);
   $("#form-linha").addEventListener("submit", buscarPorLinha);
   $("#btn-mais").addEventListener("click", mostrarMais);
-  trocarModo("perto");
+  trocarModo("endereco");
 }
 
 const descreverLocal = (local) => (local.rotulo === "Você" ? "você" : local.rotulo);
@@ -40,7 +40,6 @@ function trocarModo(modo) {
   document.querySelectorAll("[data-modo]").forEach((aba) => {
     aba.setAttribute("aria-selected", String(aba.dataset.modo === modo));
   });
-  $("#modo-perto").hidden = modo !== "perto";
   $("#form-endereco").hidden = modo !== "endereco";
   $("#form-linha").hidden = modo !== "linha";
   limparResultados();
@@ -87,7 +86,7 @@ async function listarLinhasPerto() {
       if (linhas.length) {
         mensagem(
           "#msg-busca",
-          `${linhas.length} linha(s) com ônibus a até ${formatarDistancia(raio)} de ${descreverLocal(referencia)}. Escolha a sua:`
+          `${linhas.length} linha(s) com ônibus a até ${formatarDistancia(raio)} de ${descreverLocal(referencia)}. Toque na sua:`
         );
         paginar(linhas, itemLinhaPerto);
         return;
@@ -102,9 +101,33 @@ async function listarLinhasPerto() {
 function itemLinhaPerto(dados) {
   const linha = linhaDaPosicao(dados);
   const [maisPerto] = dados.veiculos;
-  const outros = dados.veiculos.length > 1 ? ` · ${dados.veiculos.length} por perto` : "";
-  const detalhe = `Sentido ${linha.destino} · ônibus a ${formatarDistancia(maisPerto.distancia)}${outros}`;
-  return itemBotao(linha.letreiro, detalhe, () => escolher(linha));
+  const quantos = dados.veiculos.length;
+  const extra = quantos > 1 ? `${quantos} ônibus por perto` : `saindo de ${linha.origem}`;
+
+  const botao = criar(
+    "button",
+    { classe: "opcao-linha" },
+    criar("span", { classe: "placa", texto: linha.letreiro }),
+    criar(
+      "span",
+      { classe: "opcao-corpo" },
+      criar("span", { classe: "opcao-destino", texto: linha.destino }),
+      criar("span", { classe: "opcao-extra", texto: extra })
+    ),
+    criar(
+      "span",
+      { classe: "opcao-metrica" },
+      criar("strong", { texto: formatarDistancia(maisPerto.distancia) }),
+      criar("small", { texto: "daqui" })
+    )
+  );
+  botao.type = "button";
+  botao.setAttribute(
+    "aria-label",
+    `Linha ${linha.letreiro}, sentido ${linha.destino}, ônibus a ${formatarDistancia(maisPerto.distancia)}`
+  );
+  botao.addEventListener("click", () => escolher(linha));
+  return criar("li", {}, botao);
 }
 
 async function buscarPorEndereco(evento) {
@@ -153,7 +176,7 @@ async function buscarPorLinha(evento) {
       return;
     }
     const grupos = ordenarPorRelevancia(agruparPorLetreiro(linhas), termo);
-    mensagem("#msg-busca", `${grupos.length} linha(s) encontrada(s). Escolha o sentido:`);
+    mensagem("#msg-busca", `${grupos.length} linha(s). Toque no destino para onde você vai:`);
     paginar(grupos, itemGrupoLinha);
   } catch {
     limparResultados("Não foi possível consultar a SPTrans agora. Tente de novo.");
@@ -163,16 +186,21 @@ async function buscarPorLinha(evento) {
 function itemGrupoLinha(grupo) {
   const [primeiro] = grupo.sentidos;
   const botoes = grupo.sentidos.map((linha) => {
-    const botao = criar("button", { classe: "sentido", texto: `Sentido ${linha.destino}` });
+    const botao = criar("button", { texto: linha.destino });
     botao.type = "button";
+    botao.setAttribute("aria-label", `Linha ${linha.letreiro}, sentido ${linha.destino}`);
     botao.addEventListener("click", () => escolher(linha));
     return botao;
   });
   return criar(
     "li",
     { classe: "grupo-linha" },
-    criar("strong", { texto: grupo.letreiro }),
-    criar("span", { classe: "detalhe", texto: `${primeiro.origem} ⇄ ${primeiro.destino}` }),
+    criar(
+      "div",
+      { classe: "grupo-cabecalho" },
+      criar("span", { classe: "placa", texto: grupo.letreiro }),
+      criar("span", { classe: "grupo-terminais", texto: `${primeiro.origem} ⇄ ${primeiro.destino}` })
+    ),
     criar("div", { classe: "sentidos" }, ...botoes)
   );
 }
