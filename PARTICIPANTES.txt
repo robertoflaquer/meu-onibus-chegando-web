@@ -2,13 +2,13 @@ GLOBAL SOLUTION 2026.2 - Application Development
 Projeto: Meu ônibus está chegando (web)
 
 Integrantes
-- Bryan  - RM568081
-- Julia  - RM568438
-- Roberto - RM567348
+- Bryan de Almeida - RM568081
+- Julia Yamazaki   - RM568438
+- Roberto Flaquer  - RM567348
 
 Divisão do trabalho
-(a preencher quando o grupo definir quem faz cada parte)
-
-- Roberto: ...
-- Bryan: ...
-- Julia: ...
+- Roberto Flaquer: desenvolvimento do aplicativo web (busca por localização,
+  endereço e linha; painel da linha com mapa, distância, previsão e avisos),
+  das funções serverless que acessam a API Olho Vivo e publicação no Vercel.
+- Julia Yamazaki: testes do aplicativo no celular e revisão do README.
+- Bryan de Almeida: revisão do código com o grupo.
