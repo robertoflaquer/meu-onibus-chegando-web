@@ -1,5 +1,3 @@
-// Pequenos atalhos para montar a tela sem innerHTML (evita injecao de HTML vindo da API).
-
 export const $ = (seletor) => document.querySelector(seletor);
 
 export function criar(tag, { classe, texto } = {}, ...filhos) {
@@ -10,7 +8,6 @@ export function criar(tag, { classe, texto } = {}, ...filhos) {
   return elemento;
 }
 
-/** Item de lista com um botao de duas linhas (titulo em negrito e detalhe). */
 export function itemBotao(titulo, detalhe, aoClicar) {
   const botao = criar("button", { classe: "opcao" }, criar("strong", { texto: titulo }), criar("span", { texto: detalhe }));
   botao.type = "button";

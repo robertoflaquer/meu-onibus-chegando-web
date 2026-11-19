@@ -1,8 +1,3 @@
-// GET /api/endereco?q=Avenida Paulista 1578
-// Converte um endereco ou lugar em coordenadas usando o Nominatim (OpenStreetMap).
-// A busca fica limitada a regiao de Sao Paulo. A politica de uso do Nominatim pede
-// identificacao do aplicativo e poucas consultas, por isso ha um cache simples.
-
 import { lerParametros, responderJson } from "./_http.js";
 
 const NOMINATIM = "https://nominatim.openstreetmap.org/search";

@@ -1,6 +1,4 @@
-// Cliente da API Olho Vivo usado pelas funcoes serverless.
-// Arquivos com "_" no inicio nao viram rotas no Vercel: este e um modulo interno.
-
+// comeca com _ pra nao virar rota no Vercel
 const BASE = "https://api.olhovivo.sptrans.com.br/v2.1";
 const VALIDADE_POSICAO_MS = 15000;
 
@@ -23,7 +21,6 @@ async function autenticar() {
     .join("; ");
 }
 
-/** Consulta um caminho da API (ex.: "/Linha/Buscar") e devolve o JSON. */
 export async function consultarSptrans(caminho, parametros = {}) {
   const url = new URL(BASE + caminho);
   for (const [chave, valor] of Object.entries(parametros)) url.searchParams.set(chave, valor);
@@ -31,7 +28,7 @@ export async function consultarSptrans(caminho, parametros = {}) {
   if (!cookieSessao) await autenticar();
   let resposta = await fetch(url, { headers: { cookie: cookieSessao } });
 
-  // Sessao expirada: autentica de novo e repete a consulta uma vez.
+  // sessao expirou: loga de novo e tenta mais uma vez
   if (resposta.status === 401) {
     await autenticar();
     resposta = await fetch(url, { headers: { cookie: cookieSessao } });
@@ -40,10 +37,6 @@ export async function consultarSptrans(caminho, parametros = {}) {
   return resposta.json();
 }
 
-/**
- * Posicao de todos os onibus da cidade (cerca de 10 mil veiculos).
- * Guardada por 15 segundos para nao repetir a consulta pesada a cada pedido.
- */
 export async function posicaoGeral() {
   if (cachePosicao.dados && Date.now() - cachePosicao.em < VALIDADE_POSICAO_MS) {
     return cachePosicao.dados;

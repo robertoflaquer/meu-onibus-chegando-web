@@ -1,5 +1,3 @@
-// Modo de alto contraste, lembrado entre visitas quando o navegador permite.
-
 import { $ } from "./dom.js";
 
 function aplicar(ativo) {
@@ -8,7 +6,7 @@ function aplicar(ativo) {
   try {
     localStorage.setItem("contraste", ativo ? "alto" : "normal");
   } catch {
-    // sem armazenamento: a preferencia vale so nesta visita
+    // sem localStorage, vale so nesta visita
   }
 }
 

@@ -1,6 +1,3 @@
-// Mapa com Leaflet. Usa marcadores simples (circulos) para nao depender de imagens.
-// Se o Leaflet nao carregar (sem internet para o CDN), o app continua funcionando sem mapa.
-
 const COR = { ponto: "#c62828", onibus: "#0a5bd8", acessivel: "#0b7a3e", referencia: "#6a1b9a" };
 const CENTRO_SP = [-23.55, -46.63];
 
@@ -15,7 +12,6 @@ function circulo(posicao, cor, raio) {
   return L.circleMarker(posicao, { radius: raio, color: "#ffffff", weight: 2, fillColor: cor, fillOpacity: 1 });
 }
 
-/** Cria o mapa na primeira vez e recalcula o tamanho (necessario quando a secao estava oculta). */
 export function prepararMapa() {
   if (!mapaDisponivel()) return false;
   if (!mapa) {
@@ -60,7 +56,6 @@ export function mostrarOnibus(veiculos) {
   }
 }
 
-/** Ajusta o zoom para caber todos os pontos informados ([lat, lon]). */
 export function enquadrar(coordenadas) {
   if (!mapa || !coordenadas.length) return;
   if (coordenadas.length === 1) mapa.setView(coordenadas[0], 16);

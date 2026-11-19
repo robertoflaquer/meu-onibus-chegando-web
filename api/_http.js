@@ -1,5 +1,3 @@
-// Utilitarios de resposta HTTP compartilhados pelas funcoes serverless.
-
 export function lerParametros(req) {
   return new URL(req.url, "http://localhost").searchParams;
 }
@@ -11,7 +9,6 @@ export function responderJson(res, status, dados) {
   res.end(JSON.stringify(dados));
 }
 
-/** Le um numero do parametro; devolve null se ausente ou invalido. */
 export function lerNumero(parametros, nome) {
   const texto = parametros.get(nome);
   if (texto === null || texto.trim() === "") return null;

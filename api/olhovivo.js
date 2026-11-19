@@ -1,12 +1,7 @@
-// GET /api/olhovivo?caminho=/Linha/Buscar&termosBusca=8000
-// Repassa consultas de leitura para a API Olho Vivo.
-// Motivos: a API nao libera CORS para navegadores e exige token + cookie de sessao.
-// O token fica na variavel de ambiente OLHOVIVO_TOKEN, nunca no codigo do navegador.
-
+// proxy da Olho Vivo: a API nao tem CORS e o token nao pode ir pro navegador
 import { consultarSptrans } from "./_sptrans.js";
 import { lerParametros, responderJson } from "./_http.js";
 
-// Somente as consultas que o app usa.
 const CAMINHOS_PERMITIDOS = new Set([
   "/Linha/Buscar",
   "/Parada/Buscar",

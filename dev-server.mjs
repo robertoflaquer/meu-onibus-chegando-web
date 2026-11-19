@@ -1,5 +1,3 @@
-// Servidor local para desenvolvimento: serve os arquivos estaticos e as funcoes da pasta api/,
-// imitando o Vercel. Uso: npm run dev  (le o token do arquivo .env)
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";

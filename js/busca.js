@@ -1,8 +1,3 @@
-// Tela de busca: tres formas de chegar a uma linha.
-//   1. Perto de mim (acao principal, sempre visivel): GPS -> linhas com onibus passando perto agora.
-//   2. Aba Endereco: texto -> coordenadas (Nominatim) -> linhas com onibus passando perto.
-//   3. Aba Numero ou destino: linhas agrupadas por letreiro, com os dois sentidos.
-
 import * as api from "./api.js";
 import { $, criar, itemBotao, mensagem } from "./dom.js";
 import { agruparPorLetreiro, linhaDaBusca, linhaDaPosicao, ordenarPorRelevancia } from "./linhas.js";
@@ -34,8 +29,6 @@ function escolher(linha) {
   aoEscolherLinha(linha, referencia);
 }
 
-// ---------- Abas e resultados ----------
-
 function trocarModo(modo) {
   document.querySelectorAll("[data-modo]").forEach((aba) => {
     aba.setAttribute("aria-selected", String(aba.dataset.modo === modo));
@@ -64,8 +57,6 @@ function mostrarMais() {
   paginacao.mostrados += proximos.length;
   $("#btn-mais").hidden = paginacao.mostrados >= itens.length;
 }
-
-// ---------- 1 e 2: linhas perto de um local ----------
 
 async function buscarPertoDeMim() {
   limparResultados("Obtendo sua localização...");
@@ -160,8 +151,6 @@ function escolherLugar(lugar) {
   limparResultados();
   listarLinhasPerto();
 }
-
-// ---------- 3: busca pelo numero ou destino da linha ----------
 
 async function buscarPorLinha(evento) {
   evento.preventDefault();

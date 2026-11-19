@@ -1,8 +1,4 @@
-// GET /api/perto?lat=-23.56&lon=-46.65&raio=500
-// Linhas com onibus passando perto de um local agora.
-// A API Olho Vivo nao busca pontos por coordenada, e a lista de pontos dela e incompleta.
-// A posicao dos onibus, porem, e completa: por isso o "perto de mim" parte dela.
-
+// a API nao busca por coordenada, entao filtra a posicao de todos os onibus
 import { posicaoGeral } from "./_sptrans.js";
 import { lerNumero, lerParametros, responderJson } from "./_http.js";
 import { distanciaM } from "../js/util.js";

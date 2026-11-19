@@ -1,5 +1,3 @@
-// Avisos ao usuario: faixa na tela, vibracao e notificacao do navegador (quando permitida).
-
 import { $ } from "./dom.js";
 
 export function pedirPermissaoNotificacao() {

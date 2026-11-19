@@ -1,4 +1,3 @@
-// Teste local da API Olho Vivo (le o token do .env, nunca imprime o token)
 import { readFileSync } from "node:fs";
 const env = Object.fromEntries(readFileSync(".env","utf8").split(/\r?\n/).filter(l=>l.includes("=")).map(l=>l.split(/=(.*)/s).slice(0,2)));
 const token = (env.OLHOVIVO_TOKEN||"").trim();

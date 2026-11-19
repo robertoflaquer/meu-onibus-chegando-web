@@ -1,9 +1,3 @@
-// Painel de uma linha: onibus em tempo real, distancia ate o usuario, previsao no ponto e avisos.
-//
-// Duas fontes de aviso:
-//   - Distancia: funciona sempre que ha um local de referencia (GPS ou endereco).
-//   - Minutos ate o ponto: so quando a SPTrans informa os pontos da linha.
-
 import * as api from "./api.js";
 import { $, criar, mensagem } from "./dom.js";
 import { obterLocalizacao } from "./localizacao.js";
@@ -38,7 +32,7 @@ export function iniciarPainel({ aoVoltar }) {
   $("#aviso-distancia").addEventListener("change", aoMudarAviso);
   $("#aviso-minutos").addEventListener("change", aoMudarAviso);
 
-  // Com a aba escondida nao faz sentido gastar consultas e bateria.
+  // aba escondida: para de consultar
   document.addEventListener("visibilitychange", () => {
     if (!estado.linha) return;
     if (document.hidden) pararAtualizacao();
@@ -113,8 +107,6 @@ async function usarMinhaLocalizacao() {
 
 const quemEsta = () => (estado.referencia.rotulo === "Você" ? "você" : estado.referencia.rotulo);
 
-// ---------- Pontos da linha (quando a SPTrans informa) ----------
-
 async function carregarPontos() {
   const linhaPedida = estado.linha;
   mensagem("#msg-ponto", "Carregando os pontos desta linha...");
@@ -124,7 +116,7 @@ async function carregarPontos() {
   try {
     pontos = await api.paradasDaLinha(linhaPedida.cl);
   } catch {
-    // sem pontos: o painel continua funcionando pela distancia
+    // linha sem pontos: segue so pela distancia
   }
   if (estado.linha !== linhaPedida) return; // usuario ja trocou de linha
   estado.pontos = pontos;
@@ -173,8 +165,6 @@ function escolherPonto() {
   if (estado.ponto) atualizar();
 }
 
-// ---------- Atualizacao periodica ----------
-
 async function atualizar() {
   const { linha, ponto } = estado;
   if (!linha) return;
@@ -199,7 +189,6 @@ async function atualizar() {
   }
 }
 
-/** Calcula a distancia de cada onibus ate a referencia e se ele esta se aproximando. */
 function medirVeiculos(lista) {
   const { referencia, movimento } = estado;
   if (!referencia) return lista.map((v) => ({ ...v, distancia: null, status: null }));
@@ -237,8 +226,6 @@ function enquadrarMapa(veiculos) {
   estado.enquadrado = true;
 }
 
-// ---------- Renderizacao ----------
-
 const TEXTO_STATUS = {
   aproximando: "se aproximando",
   afastando: "se afastando",
@@ -269,7 +256,7 @@ function renderizarDestaque(veiculos) {
     return;
   }
 
-  // Prioriza o onibus que vem na direcao do usuario; senao, o mais proximo.
+  // primeiro o que esta vindo, senao o mais perto
   const alvo = veiculos.find((v) => v.status === "aproximando") ?? veiculos[0];
   mensagem("#destaque-valor", formatarDistancia(alvo.distancia));
   mensagem("#destaque-texto", `até ${quemEsta()}, ônibus ${alvo.p}${alvo.a ? " (acessível)" : ""}`);
@@ -279,7 +266,6 @@ function renderizarDestaque(veiculos) {
     chip.hidden = false;
   }
 
-  // Trilha: o onibus anda da esquerda (2 km ou mais) ate "voce" (direita).
   const fracao = Math.min(alvo.distancia, ESCALA_TRILHA_M) / ESCALA_TRILHA_M;
   $("#trilha-onibus").style.left = `calc((100% - 14px) * ${(1 - fracao).toFixed(3)})`;
   $("#trilha-rotulo").textContent = quemEsta();
@@ -319,8 +305,6 @@ function renderizarPrevisoes(chegadas) {
   });
   $("#lista-previsoes").replaceChildren(...itens);
 }
-
-// ---------- Avisos ----------
 
 function aoMudarAviso() {
   estado.jaAvisados.clear();

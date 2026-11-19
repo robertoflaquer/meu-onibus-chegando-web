@@ -1,5 +1,3 @@
-// Ponto de entrada: liga a busca ao painel da linha.
-
 import { $ } from "./dom.js";
 import { iniciarContraste } from "./contraste.js";
 import { iniciarBusca } from "./busca.js";

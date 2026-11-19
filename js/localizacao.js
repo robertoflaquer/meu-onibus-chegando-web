@@ -1,12 +1,9 @@
-// Localizacao do aparelho (GPS ou rede), com mensagens de erro em portugues.
-
 const MENSAGENS_ERRO = {
   1: "Você não permitiu o acesso à localização. Libere nas configurações do navegador ou busque por endereço.",
   2: "Não foi possível descobrir sua localização agora. Tente de novo ou busque por endereço.",
   3: "A localização demorou demais para responder. Tente de novo ou busque por endereço.",
 };
 
-/** Resolve com { lat, lon, rotulo } ou rejeita com uma mensagem pronta para mostrar. */
 export function obterLocalizacao() {
   return new Promise((resolver, rejeitar) => {
     if (!navigator.geolocation) {
